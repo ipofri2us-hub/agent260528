@@ -1,0 +1,64 @@
+# C:\work\agent260528\config.yaml
+
+# [1] 다중 매체 동적 수집 파이프라인 설정 💥 (리스트 형태로 무한 확장 가능)
+sources:
+  - media_name: "로봇신문"
+    target_url: "http://www.irobotnews.com/news/articleList.html"
+    max_pages: 5
+    url_pattern: "articleView\\.html\\?idxno=\\d+"
+    content_selectors: ["#article-view-content-div", ".user-content", "#articleBody"]
+    prefix_url: "http://www.irobotnews.com"
+
+  - media_name: "전자신문"
+    target_url: "https://www.etnews.com/news/section.html?id1=20&id2=045"
+    max_pages: 3
+    url_pattern: "/\\d{14}"
+    content_selectors: [".article_body", ".article_txt", "article"]
+    prefix_url: "https://www.etnews.com"
+
+# [2] 정밀 지식 파편화를 위한 텍스트 분할 설정
+chunk:
+  size: 500
+  overlap: 100
+
+# [3] 로컬 벡터 DB 통합 인프라 설정
+vector_db:
+  collection_name: "integrated_robot_news_docs" # 통합 창고 이름
+  chroma_path: "C:\\work\\agent260528\\vector_db\\integrated_db" # 통합 DB 경로
+  embedding_model: "nomic-embed-text:latest"
+  embedding_url: "http://localhost:11434/api/embeddings"
+
+# [4] 2차 정밀 재정렬 가중치 전략 설정
+rerank:
+  target_keywords: ["삼성", "SAMSUNG", "레인보우"]
+  weight_score: 15
+  top_k: 3
+
+# [5] 로컬 생성형 LLM 인프라 설정
+llm:
+  model_name: "gemma2:2b"
+  api_url: "http://localhost:11434/api/generate"
+  temperature: 0.2
+
+# C:\work\agent260528\config.yaml
+mcp:
+  mode: "fastmcp"
+  fastmcp_url: "http://127.0.0.1:8765"
+
+# [프로덕션 레지스트리] 인공지능 통신에 최적화된 실제 검색 키워드 정의
+search_registry:
+  robot:
+    arxiv_keywords: "VLA robot foundation imitation learning"
+    news_keywords: "휴머노이드 로봇 인공지능 제어"
+    domain_name: "Humanoid & Embodied AI"
+    fetch_limit: 10
+  amr:
+    arxiv_keywords: "AMR SLAM autonomous mobile robot navigation"
+    news_keywords: "물류 로봇 자율주행 슬램"
+    domain_name: "AMR Logistics Tech"
+    fetch_limit: 10
+  hw:
+    arxiv_keywords: "robotics actuator motor hardware sensor"
+    news_keywords: "로봇 모터 감속기 액추에이터"
+    domain_name: "Robotics Hardware Engineering"
+    fetch_limit: 10

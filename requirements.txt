@@ -1,0 +1,105 @@
+# ============================================================
+# 삼성디스플레이 재직자 대상 AI Agent Architecture 1~5일차 실습
+# requirements.txt
+# ============================================================
+#
+# 이 파일은 1일차 Prompt / Chain / mini Graph / Day1 Agent v0,
+# 2일차 Markdown RAG / Chroma Vector DB / LangGraph RAG Agent,
+# 3일차 PostgreSQL 제조 DB/Log Tool / RAG Tool wrapper / MCP 형식 Tool 호출,
+# 4일차 Trace 분석 / Contract 검증 / 오류 재현 / Guardrail,
+# 5일차 Final MCP Multi-Agent / Trace / 최종 리포트 실습에 사용합니다.
+#
+# LLM 사용 구조:
+# - mock  : API Key 없이 사용하는 기본 교육용 Mock LLM입니다.
+# - local : Ollama 로컬 서버를 HTTP API로 호출합니다.
+# - cloud : Gemini, OpenAI, Anthropic, NVIDIA 중 하나를 .env에서 선택해 사용합니다.
+#
+# NVIDIA mistral-nemotron 사용 방식:
+# - 프로젝트 기본 구현은 OpenAI-compatible SDK 방식으로 NVIDIA endpoint를 호출합니다.
+# - .env 예시:
+#     LLM_PROVIDER=cloud
+#     CLOUD_LLM_PROVIDER=nvidia
+#     NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
+#     NVIDIA_MODEL_NAME=mistralai/mistral-nemotron
+#
+# 2일차 RAG 실습에서 Chroma Vector DB를 사용하므로 chromadb를 포함합니다.
+# 3일차 PostgreSQL 실습에서는 Docker로 실행한 교육용 PostgreSQL에
+# Python으로 접속하기 위해 psycopg2-binary를 사용합니다.
+#
+# 제외 항목:
+# - faiss: Chroma를 사용하므로 FAISS는 사용하지 않습니다.
+# - mcp 공식 패키지: 교육용 Minimal MCP 구조 또는 fallback Tool Registry를 사용합니다.
+#
+# 선택 사항:
+# - LangChain ChatNVIDIA 예제를 직접 실행할 때만 별도로 설치합니다.
+#   python -m pip install langchain-nvidia-ai-endpoints
+#   현재 기본 프로젝트 코드는 OpenAI-compatible SDK로 NVIDIA를 호출하므로 필수는 아닙니다.
+# ============================================================
+
+# CSV 파일 읽기 및 필터링에 사용합니다.
+pandas>=2.0.0
+
+# .env 파일에서 API Key, LLM 설정, PostgreSQL 접속 설정을 읽는 데 사용합니다.
+python-dotenv>=1.0.0
+
+# Ollama Local LLM HTTP API 호출에 사용합니다.
+# Ollama Python 전용 패키지는 사용하지 않고 requests로 직접 호출합니다.
+requests>=2.31.0
+
+# Gemini API 호출에 사용합니다.
+# deprecated 된 google-generativeai 대신 google-genai를 사용합니다.
+google-genai>=1.0.0
+
+# OpenAI API와 NVIDIA OpenAI-compatible endpoint 호출에 사용합니다.
+# NVIDIA mistral-nemotron 호출 시 base_url=https://integrate.api.nvidia.com/v1 형태로 사용합니다.
+openai>=1.40.0
+
+# Anthropic API 호출에 사용합니다.
+# Cloud LLM 선택 실습에서 선택적으로 사용합니다.
+anthropic>=0.40.0
+
+# LangChain Prompt / Chain 구조 맛보기 확장 실습에 사용합니다.
+langchain>=0.2.0
+
+# LangChain의 PromptTemplate, Runnable 같은 핵심 구성요소에 사용합니다.
+langchain-core>=0.2.0
+
+# LangGraph State / Node / Edge / 조건부 분기 실습에 사용합니다.
+langgraph>=0.2.0
+
+# TypedDict 등 타입 힌트 호환성 보강에 사용합니다.
+typing-extensions>=4.9.0
+
+# Chroma Vector DB 기반 RAG 검색 실습에 사용합니다.
+chromadb>=0.5.0
+
+# PostgreSQL 제조 DB/Log Tool 실습에서 Python DB 연결에 사용합니다.
+psycopg2-binary>=2.9.9
+
+# 3~4일차 Tool Contract JSON 검증 확장 실습에 사용합니다.
+jsonschema>=4.22.0
+
+# 3일차 Minimal MCP/FastAPI 서버의 요청·응답 모델 검증에 사용합니다.
+pydantic>=2.6.0
+
+# 콘솔 출력 가독성 개선에 사용합니다.
+rich>=13.0.0
+
+# 진행률 표시와 chunk 생성 진행 상황 출력에 사용합니다.
+tqdm>=4.66.0
+
+# Flask가 이미 설치된 Anaconda 환경에서 의존성 경고가 날 때를 대비합니다.
+Jinja2>=3.1.2
+
+# 3일차 Minimal MCP Server 및 5일차 통합 데모 확장에 사용합니다.
+fastapi>=0.110.0
+uvicorn>=0.27.0
+streamlit
+fastmcp
+
+# Mustache 템플릿 기반 Markdown 보고서 생성에 사용합니다.
+chevron>=0.14.0
+pystache>=0.6.5
+notebook 
+jupyter 
+ipykernel
