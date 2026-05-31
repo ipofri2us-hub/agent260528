@@ -1,25 +1,27 @@
 """
 로봇 신문 Multi-Agent LangGraph
 
-RFM / VLA / 모방학습 논문·뉴스를 수집해 마크다운 보고서를 생성합니다.
+RFM / VLA / 모방학습 논문·뉴스 + Reddit r/robotics 게시물을 수집해 보고서를 생성합니다.
 
 [에이전트 역할 분담]
   CoordinatorAgent      : 사용자 쿼리 분석, top_k 결정
-  RFMFetcherAgent       : search_rfm_news 도구 호출
-  VLAFetcherAgent       : search_vla_news 도구 호출
+  RFMFetcherAgent       : search_rfm_news 도구 호출 (ArXiv + Google News + 로봇진)
+  VLAFetcherAgent       : search_vla_news 도구 호출 (ArXiv + Google News + 로봇진)
   ImitationFetcherAgent : search_imitation_learning_news 도구 호출
+  RedditFetcherAgent    : search_reddit_robotics 도구 호출 (r/robotics RSS)
   ReportAgent           : 수집 결과 종합 → 마크다운 보고서
 
 [State 흐름]
   user_query
-    → [Coordinator] top_k 결정
-    → [RFMFetcher]  rfm_results 채움
-    → [VLAFetcher]  vla_results 채움
+    → [Coordinator]      top_k 결정
+    → [RFMFetcher]       rfm_results 채움
+    → [VLAFetcher]       vla_results 채움
     → [ImitationFetcher] imitation_results 채움
-    → [Report]      final_report 완성
+    → [RedditFetcher]    reddit_results 채움
+    → [Report]           final_report 완성
 
 [LangGraph 구조]
-  coordinator → rfm_fetch → vla_fetch → imitation_fetch → report → END
+  coordinator → rfm_fetch → vla_fetch → imitation_fetch → reddit_fetch → report → END
 
 [실행]
   # 서버 기동 후 (권장)
@@ -58,6 +60,7 @@ class NewsState(TypedDict):
     rfm_results: Dict[str, Any]         # RFM 수집 결과
     vla_results: Dict[str, Any]         # VLA 수집 결과
     imitation_results: Dict[str, Any]   # 모방학습 수집 결과
+    reddit_results: Dict[str, Any]      # Reddit r/robotics 게시물
     agent_steps: List[str]              # 실행 흐름 기록
     final_report: str                   # 최종 마크다운 보고서
 
@@ -73,6 +76,7 @@ def _make_initial_state(user_query: str, top_k: int = DEFAULT_TOP_K) -> dict:
         "rfm_results": {},
         "vla_results": {},
         "imitation_results": {},
+        "reddit_results": {},
         "agent_steps": [],
         "final_report": "",
     }
@@ -181,6 +185,30 @@ class ImitationFetcherAgent:
         return state
 
 
+class RedditFetcherAgent:
+    """
+    [Reddit 수집 에이전트] search_reddit_robotics 도구를 호출합니다.
+
+    State 변경: reddit_results 채움 (모든 토픽 탭에서 공유)
+    """
+    name = "RedditFetcherAgent"
+
+    def __init__(self, call_tool_func) -> None:
+        self.call_tool = call_tool_func
+
+    def run(self, state: dict) -> dict:
+        top_k = state.get("top_k", DEFAULT_TOP_K)
+        try:
+            result = self.call_tool("search_reddit_robotics", {"limit": top_k})
+            state["reddit_results"] = result
+            n = result.get("post_count", len(result.get("posts", [])))
+            _add_step(state, self.name, f"Reddit r/robotics 수집 완료 — {n}건")
+        except Exception as exc:
+            state["reddit_results"] = {"posts": [], "error": str(exc)}
+            _add_step(state, self.name, f"[오류] Reddit 수집 실패: {exc}")
+        return state
+
+
 class ReportAgent:
     """
     [보고서 에이전트] 세 토픽의 수집 결과를 종합해 마크다운 보고서를 작성합니다.
@@ -224,6 +252,24 @@ class ReportAgent:
 
         return "\n".join(lines)
 
+    def _format_reddit_section(self, data: dict) -> str:
+        lines = ["## 4. Reddit r/robotics 최신 게시물"]
+        posts = data.get("posts", [])
+        error = data.get("error")
+        if error:
+            lines.append(f"> 수집 오류: {error}")
+            return "\n".join(lines)
+        if not posts:
+            lines.append("> 수집된 게시물이 없습니다.")
+            return "\n".join(lines)
+        for i, item in enumerate(posts, 1):
+            title = item.get("title", "제목 없음")
+            link = item.get("link", "#")
+            source = item.get("source", "r/robotics")
+            date = item.get("date", "")
+            lines.append(f"{i}. [{title}]({link})  — {source} `{date}`")
+        return "\n".join(lines)
+
     def run(self, state: dict) -> dict:
         rfm_sec = self._format_topic_section(
             "1. RFM (Robot Foundation Model)", state.get("rfm_results", {})
@@ -234,6 +280,7 @@ class ReportAgent:
         imitation_sec = self._format_topic_section(
             "3. 모방학습 (Imitation Learning)", state.get("imitation_results", {})
         )
+        reddit_sec = self._format_reddit_section(state.get("reddit_results", {}))
 
         steps_md = "\n".join(f"- {s}" for s in state.get("agent_steps", []))
         top_k = state.get("top_k", DEFAULT_TOP_K)
@@ -257,6 +304,10 @@ class ReportAgent:
 
 ---
 
+{reddit_sec}
+
+---
+
 ## 에이전트 실행 기록
 
 {steps_md}
@@ -271,28 +322,31 @@ def build_graph(call_tool_func) -> object:
     """
     Multi-Agent LangGraph를 조립합니다.
 
-    [노드]  coordinator → rfm_fetch → vla_fetch → imitation_fetch → report → END
+    [노드]  coordinator → rfm_fetch → vla_fetch → imitation_fetch → reddit_fetch → report → END
     [엣지]  순차 직렬 연결 (각 에이전트가 State를 채운 뒤 다음 에이전트로 전달)
     """
     coordinator = CoordinatorAgent()
     rfm_agent = RFMFetcherAgent(call_tool_func)
     vla_agent = VLAFetcherAgent(call_tool_func)
     imitation_agent = ImitationFetcherAgent(call_tool_func)
+    reddit_agent = RedditFetcherAgent(call_tool_func)
     report_agent = ReportAgent()
 
     workflow = StateGraph(dict)
 
-    workflow.add_node("coordinator",       lambda s: coordinator.run(s))
-    workflow.add_node("rfm_fetch",         lambda s: rfm_agent.run(s))
-    workflow.add_node("vla_fetch",         lambda s: vla_agent.run(s))
-    workflow.add_node("imitation_fetch",   lambda s: imitation_agent.run(s))
-    workflow.add_node("report",            lambda s: report_agent.run(s))
+    workflow.add_node("coordinator",     lambda s: coordinator.run(s))
+    workflow.add_node("rfm_fetch",       lambda s: rfm_agent.run(s))
+    workflow.add_node("vla_fetch",       lambda s: vla_agent.run(s))
+    workflow.add_node("imitation_fetch", lambda s: imitation_agent.run(s))
+    workflow.add_node("reddit_fetch",    lambda s: reddit_agent.run(s))
+    workflow.add_node("report",          lambda s: report_agent.run(s))
 
     workflow.set_entry_point("coordinator")
     workflow.add_edge("coordinator",     "rfm_fetch")
     workflow.add_edge("rfm_fetch",       "vla_fetch")
     workflow.add_edge("vla_fetch",       "imitation_fetch")
-    workflow.add_edge("imitation_fetch", "report")
+    workflow.add_edge("imitation_fetch", "reddit_fetch")
+    workflow.add_edge("reddit_fetch",    "report")
     workflow.add_edge("report",          END)
 
     return workflow.compile()

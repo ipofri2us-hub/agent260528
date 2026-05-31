@@ -29,27 +29,49 @@ import json
 import os
 from pathlib import Path
 
+import yaml  # type: ignore[import-untyped]
+
 # 이 Client가 허용하는 Tool 이름 목록 (화이트리스트)
 SUPPORTED_TOOLS = [
     "search_rfm_news",
     "search_vla_news",
     "search_imitation_learning_news",
+    "search_reddit_robotics",
 ]
 
 TOOL_DESCRIPTIONS = {
-    "search_rfm_news": "RFM(Robot Foundation Model) 최신 논문·뉴스 수집",
-    "search_vla_news": "VLA(Vision-Language-Action) 최신 논문·뉴스 수집",
-    "search_imitation_learning_news": "모방학습(Imitation Learning) 최신 논문·뉴스 수집",
+    "search_rfm_news": "RFM(Robot Foundation Model) 최신 논문·뉴스 수집 (ArXiv + Google News + 로봇진)",
+    "search_vla_news": "VLA(Vision-Language-Action) 최신 논문·뉴스 수집 (ArXiv + Google News + 로봇진)",
+    "search_imitation_learning_news": "모방학습(Imitation Learning) 최신 논문·뉴스 수집 (ArXiv + Google News + 로봇진)",
+    "search_reddit_robotics": "Reddit r/robotics 최신 게시물 수집",
 }
+
+def _load_url_from_config() -> str:
+    """config.yaml 의 mcp.my_mcp_url 값을 읽어 반환합니다. 없으면 빈 문자열."""
+    try:
+        config_path = Path(__file__).resolve().parents[1] / "config.yaml"
+        if config_path.exists():
+            with open(config_path, encoding="utf-8") as f:
+                cfg = yaml.safe_load(f) or {}
+            return str(cfg.get("mcp", {}).get("my_mcp_url", "")).strip()
+    except Exception:
+        pass
+    return ""
 
 
 def get_target() -> str:
     """
     FastMCP Client 연결 대상을 결정합니다.
-    - MY_MCP_URL 이 설정되어 있으면 해당 URL (외부 서버)
-    - 없으면 my_mcp_server.py 경로 (FastMCP가 자동 기동)
+
+    우선순위:
+      1) 환경변수 MY_MCP_URL
+      2) config.yaml  mcp.my_mcp_url
+      3) my_mcp_server.py 스크립트 경로 (FastMCP 서브프로세스 자동 기동)
     """
     url = os.getenv("MY_MCP_URL", "").strip()
+    if url:
+        return url
+    url = _load_url_from_config()
     if url:
         return url
     return str(Path(__file__).resolve().parent / "my_mcp_server.py")

@@ -44,6 +44,7 @@ llm:
 mcp:
   mode: "fastmcp"
   fastmcp_url: "http://127.0.0.1:8765"
+  my_mcp_url: "http://127.0.0.1:8766/mcp"
 
 # [프로덕션 레지스트리] 인공지능 통신에 최적화된 실제 검색 키워드 정의
 search_registry:
