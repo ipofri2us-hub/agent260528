@@ -1,0 +1,102 @@
+[
+  {
+    "case_id": "CRAWL-EVAL-001",
+    "user_query": "ROS2 SLAM 알고리즘 최신 연구 논문",
+    "category": "academic",
+    "case_design_type": "single_source_academic",
+    "difficulty": "easy",
+    "expected_tools": ["search_arxiv"],
+    "expected_keywords": ["robot", "slam"],
+    "teaching_point": "학술 논문 쿼리: search_arxiv가 선택되고 SLAM/robot 키워드가 결과에 등장해야 한다."
+  },
+  {
+    "case_id": "CRAWL-EVAL-002",
+    "user_query": "Reddit robotics 커뮤니티 AMR 토론 추천 의견 포럼",
+    "category": "community",
+    "case_design_type": "single_source_community",
+    "difficulty": "easy",
+    "expected_tools": ["search_reddit"],
+    "expected_keywords": ["robot", "amr"],
+    "teaching_point": "커뮤니티 쿼리: search_reddit이 선택되고 AMR/robot 관련 결과가 나와야 한다."
+  },
+  {
+    "case_id": "CRAWL-EVAL-003",
+    "user_query": "한국 로봇 산업 국내 뉴스 최신 동향",
+    "category": "korean_news",
+    "case_design_type": "single_source_korean",
+    "difficulty": "easy",
+    "expected_tools": ["search_irobotnews"],
+    "expected_keywords": ["로봇"],
+    "teaching_point": "한국어 뉴스 쿼리: search_irobotnews가 선택되고 '로봇' 키워드가 결과에 포함되어야 한다."
+  },
+  {
+    "case_id": "CRAWL-EVAL-004",
+    "user_query": "robot product launch industry news market company trend",
+    "category": "industry_news",
+    "case_design_type": "single_source_industry",
+    "difficulty": "easy",
+    "expected_tools": ["search_robot_news"],
+    "expected_keywords": ["robot"],
+    "teaching_point": "업계 뉴스 쿼리: search_robot_news가 선택되고 robot 키워드가 결과에 포함되어야 한다."
+  },
+  {
+    "case_id": "CRAWL-EVAL-005",
+    "user_query": "ROS2 AMR navigation 논문 연구 커뮤니티 토론",
+    "category": "multi_source",
+    "case_design_type": "multi_source",
+    "difficulty": "medium",
+    "expected_tools": ["search_arxiv", "search_reddit"],
+    "expected_keywords": ["robot", "navigation"],
+    "teaching_point": "복합 쿼리: 학술+커뮤니티 소스 모두에서 navigation/robot 키워드가 나와야 한다."
+  },
+  {
+    "case_id": "CRAWL-EVAL-006",
+    "user_query": "humanoid robot hardware actuator gripper design research",
+    "category": "academic",
+    "case_design_type": "single_source_academic",
+    "difficulty": "medium",
+    "expected_tools": ["search_arxiv"],
+    "expected_keywords": ["robot"],
+    "teaching_point": "하드웨어 설계 쿼리: arXiv에서 robot 관련 논문이 반환되어야 한다."
+  },
+  {
+    "case_id": "CRAWL-EVAL-007",
+    "user_query": "SLAM lidar path planning autonomous mobile robot algorithm survey",
+    "category": "academic",
+    "case_design_type": "single_source_academic",
+    "difficulty": "medium",
+    "expected_tools": ["search_arxiv"],
+    "expected_keywords": ["robot", "autonomous"],
+    "teaching_point": "SLAM/경로계획 쿼리: arXiv 결과에 autonomous/robot 키워드가 포함되어야 한다."
+  },
+  {
+    "case_id": "CRAWL-EVAL-008",
+    "user_query": "국내 AMR 자율주행 물류 로봇 뉴스 기사 한국",
+    "category": "korean_news",
+    "case_design_type": "single_source_korean",
+    "difficulty": "medium",
+    "expected_tools": ["search_irobotnews"],
+    "expected_keywords": ["로봇"],
+    "teaching_point": "한국어 물류/AMR 쿼리: 로봇신문 결과에 '로봇' 키워드가 반드시 포함되어야 한다."
+  },
+  {
+    "case_id": "CRAWL-EVAL-009",
+    "user_query": "로봇 업계 뉴스 시장 제품 출시 기업 동향",
+    "category": "multi_source",
+    "case_design_type": "multi_source",
+    "difficulty": "medium",
+    "expected_tools": ["search_irobotnews", "search_robot_news"],
+    "expected_keywords": ["로봇", "robot"],
+    "teaching_point": "한국어+업계 복합 쿼리: 한국과 영문 뉴스 양쪽에서 결과가 나와야 한다."
+  },
+  {
+    "case_id": "CRAWL-EVAL-010",
+    "user_query": "robot perception camera depth neural network learning research",
+    "category": "academic",
+    "case_design_type": "single_source_academic",
+    "difficulty": "hard",
+    "expected_tools": ["search_arxiv"],
+    "expected_keywords": ["robot", "learning"],
+    "teaching_point": "인지/학습 쿼리: arXiv에서 robot/learning 관련 논문이 반환되어야 한다."
+  }
+]

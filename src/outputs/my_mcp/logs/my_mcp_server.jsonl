@@ -1,0 +1,9 @@
+{"timestamp": "2026-06-02T11:39:19", "event_type": "tool_called", "user_query_preview": "ROS2 AMR SLAM"}
+{"timestamp": "2026-06-02T11:39:19", "event_type": "tool_selected", "generation_source": "fallback_rule", "fallback_used": true}
+{"timestamp": "2026-06-02T11:39:19", "event_type": "tool_executed", "tool_name": "(query)", "status": "dry_run", "validation_status": "PASS", "executed_count": 4, "result_count": 0, "issue_types": []}
+{"timestamp": "2026-06-02T11:39:55", "event_type": "tool_called", "user_query_preview": "test query"}
+{"timestamp": "2026-06-02T11:39:55", "event_type": "tool_selected", "generation_source": "llm_error", "fallback_used": false}
+{"timestamp": "2026-06-02T11:39:55", "event_type": "tool_rejected", "tool_name": "(query)", "status": "rejected", "validation_status": "WARNING", "executed_count": 0, "result_count": 0, "issue_types": ["empty_plan"]}
+{"timestamp": "2026-06-02T11:41:54", "event_type": "tool_called", "user_query_preview": "ROS2 AMR SLAM 최신 동향"}
+{"timestamp": "2026-06-02T11:41:54", "event_type": "tool_selected", "generation_source": "fallback_rule", "fallback_used": true}
+{"timestamp": "2026-06-02T11:42:07", "event_type": "tool_executed", "tool_name": "(query)", "status": "executed", "validation_status": "PASS", "executed_count": 4, "result_count": 12, "issue_types": []}
