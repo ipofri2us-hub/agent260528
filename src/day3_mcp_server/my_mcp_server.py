@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import sys
+import time
 import urllib.parse
 
 import requests
@@ -47,14 +48,24 @@ def _arxiv_search(query: str, limit: int = 5) -> list[dict]:
         "sortBy": "submittedDate",
         "sortOrder": "descending",
     }
+    arxiv_headers = {**_HEADERS, "Accept": "application/atom+xml"}
     try:
-        resp = requests.get(
-            "https://export.arxiv.org/api/query",
-            params=params,
-            timeout=15,
-        )
-        if resp.status_code != 200:
-            print(f"[arxiv] HTTP {resp.status_code} for query: {query}", file=sys.stderr)
+        resp = None
+        for attempt in range(3):
+            resp = requests.get(
+                "https://export.arxiv.org/api/query",
+                params=params,
+                headers=arxiv_headers,
+                timeout=15,
+            )
+            if resp.status_code == 429:
+                wait = int(resp.headers.get("Retry-After", 2 ** (attempt + 1)))
+                print(f"[arxiv] 429 rate limit, {wait}s 대기 후 재시도 ({attempt+1}/3)", file=sys.stderr)
+                time.sleep(wait)
+                continue
+            break
+        if resp is None or resp.status_code != 200:
+            print(f"[arxiv] HTTP {resp.status_code if resp else 'None'} for query: {query}", file=sys.stderr)
             return []
         soup = BeautifulSoup(resp.content, "xml")
         results = []
